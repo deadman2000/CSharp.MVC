@@ -1,5 +1,6 @@
 @if (Session != null) {
     <h1>Привет @Session.Data.Login</h1>
+    <h2><a href="/auth/logout">Выход</a></h2>
 } else {
     <h1><a href="/auth/login">Залогинься!</a></h1>
 }

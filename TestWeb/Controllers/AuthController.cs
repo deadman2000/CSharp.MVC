@@ -26,5 +26,12 @@ namespace TestWeb.Controllers
                 View("login.cshtml");
             }
         }
+
+        public void Logout()
+        {
+            Console.WriteLine("Logout");
+            CloseSession();
+            Redirect("/");
+        }
     }
 }

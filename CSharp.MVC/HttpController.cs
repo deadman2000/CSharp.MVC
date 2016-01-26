@@ -181,14 +181,29 @@ namespace EmbeddedMVC
             if (_completed)
                 throw new Exception("Answer already send");
 
+            if (_session != null)
+                return _session;
+
             HttpSession sess = new HttpSession(_context.Request.RemoteEndPoint.Address);
             _server.AddSession(sess);
 
             Cookie cookie = new Cookie("__sess", sess.ID, "/");
-            cookie.Expired = true;
             cookie.Expires = DateTime.Now.AddDays(7);
             _context.Response.SetCookie(cookie);
             return sess;
+        }
+
+        public void CloseSession()
+        {
+            Cookie cookie = new Cookie("__sess", "", "/");
+            cookie.Expired = true;
+            _context.Response.SetCookie(cookie);
+
+            if (_session == null)
+                return;
+
+            _server.RemoveSession(_session);
+            _session = null;
         }
     }
 }

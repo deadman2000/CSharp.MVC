@@ -321,6 +321,11 @@ namespace EmbeddedMVC
             return null;
         }
 
+        public void RemoveSession(HttpSession session)
+        {
+            _sessions.Remove(session.ID);
+        }
+
         #endregion
     }
 }
