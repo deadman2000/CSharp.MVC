@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmbeddedMVC", "CSharp.MVC\EmbeddedMVC.csproj", "{4EC374E9-0E8D-4A98-8A33-2E79D173FA76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWeb", "TestWeb\TestWeb.csproj", "{02768239-E183-4C6E-9C52-C3FB0603A648}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{F72BE955-A5F2-4814-84E6-EC15ACD6EFF3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E106FE84-0D40-49F3-A38A-BF785F6CE370}"
+	ProjectSection(SolutionItems) = preProject
+		Readme.md = Readme.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EC374E9-0E8D-4A98-8A33-2E79D173FA76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EC374E9-0E8D-4A98-8A33-2E79D173FA76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EC374E9-0E8D-4A98-8A33-2E79D173FA76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EC374E9-0E8D-4A98-8A33-2E79D173FA76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02768239-E183-4C6E-9C52-C3FB0603A648}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02768239-E183-4C6E-9C52-C3FB0603A648}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02768239-E183-4C6E-9C52-C3FB0603A648}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02768239-E183-4C6E-9C52-C3FB0603A648}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F72BE955-A5F2-4814-84E6-EC15ACD6EFF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F72BE955-A5F2-4814-84E6-EC15ACD6EFF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F72BE955-A5F2-4814-84E6-EC15ACD6EFF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F72BE955-A5F2-4814-84E6-EC15ACD6EFF3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		VisualSVNWorkingCopyRoot = .
+	EndGlobalSection
+EndGlobal

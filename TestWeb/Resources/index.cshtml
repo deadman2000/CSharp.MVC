@@ -1,0 +1,7 @@
+@if (Session != null) {
+    <h1>Привет @Session.Data.Login</h1>
+} else {
+    <h1><a href="/auth/login">Залогинься!</a></h1>
+}
+
+<p>Now is @DateTime.Now</p>
