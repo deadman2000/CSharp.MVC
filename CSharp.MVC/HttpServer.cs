@@ -314,10 +314,11 @@ namespace EmbeddedMVC
             _sessions[sess.ID] = sess;
         }
 
-        public HttpSession GetSession(string id)
+        public HttpSession GetSession(IPAddress ip, string id)
         {
             HttpSession sess;
-            if (_sessions.TryGetValue(id, out sess)) return sess;
+            if (_sessions.TryGetValue(id, out sess) && sess.IP.Equals(ip))
+                return sess;
             return null;
         }
 

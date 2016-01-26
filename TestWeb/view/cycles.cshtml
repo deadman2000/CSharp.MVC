@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+</head>
+<body>
+    <ul>
+        @for (var i = 0; i < 10; i++)
+        {
+            <li>@i</li>
+        }
+    </ul>
+    <h1>Threads</h1>
+    <ul>
+        @foreach (var m in Model.Threads)
+        {
+            <li>@m.Id - @m.ThreadState</li>
+        }
+    </ul>
+</body>
+</html>

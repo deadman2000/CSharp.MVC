@@ -14,7 +14,7 @@ namespace EmbeddedMVC
     class ViewCompiler
     {
         private string cshtml;
-        private const bool DEBUG = false;
+        private const bool DEBUG = true;
 
         public ViewCompiler(string cshtml)
         {
@@ -25,7 +25,10 @@ namespace EmbeddedMVC
         {
             if (DEBUG) Console.WriteLine("Building...");
             string src = Generate();
+            if (DEBUG) Console.WriteLine();
+            if (DEBUG) Console.WriteLine();
             if (DEBUG) Console.WriteLine(src);
+            if (DEBUG) Console.WriteLine();
             if (DEBUG) Console.WriteLine();
             if (DEBUG) File.WriteAllText("D:\\Temp\\temp.cs", src);
 
@@ -97,7 +100,14 @@ namespace EmbeddedMVC
                         if (IsNextWord("else"))
                             SkipCode();
                         string code = cshtml.Substring(exprStart, offset - exprStart);
-                        if (DEBUG) Console.WriteLine("if code: " + code);
+                        WriteCode(code);
+                    }
+                    else if (expression.Equals("for") || expression.Equals("foreach"))
+                    {
+                        SkipBracers();
+                        SkipCode();
+                        string code = cshtml.Substring(exprStart, offset - exprStart);
+                        if (DEBUG) Console.WriteLine(expression + " code: " + code);
                         WriteCode(code);
                     }
                     else

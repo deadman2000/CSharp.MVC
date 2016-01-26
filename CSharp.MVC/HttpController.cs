@@ -85,7 +85,7 @@ namespace EmbeddedMVC
         {
             var cookie = _context.Request.Cookies["__sess"];
             if (cookie != null)
-                _session = _server.GetSession(cookie.Value);
+                _session = _server.GetSession(_context.Request.RemoteEndPoint.Address, cookie.Value);
         }
 
         public void Finish()
