@@ -14,7 +14,7 @@ namespace EmbeddedMVC
     class ViewCompiler
     {
         private string cshtml;
-        private const bool DEBUG = true;
+        private const bool DEBUG = false;
 
         public ViewCompiler(string cshtml)
         {
@@ -102,7 +102,7 @@ namespace EmbeddedMVC
                         string code = cshtml.Substring(exprStart, offset - exprStart);
                         WriteCode(code);
                     }
-                    else if (expression.Equals("for") || expression.Equals("foreach"))
+                    else if (expression.Equals("for") || expression.Equals("foreach") || expression.Equals("switch"))
                     {
                         SkipBracers();
                         SkipCode();
@@ -128,7 +128,7 @@ namespace EmbeddedMVC
             for (int i = offset; i < cshtml.Length; i++)
             {
                 char c = cshtml[i];
-                if (Char.IsWhiteSpace(c))
+                if (!Char.IsLetterOrDigit(c))
                 {
                     if (start != -1)
                         return cshtml.Substring(start, i - start).Equals(pattern);
@@ -300,12 +300,13 @@ namespace EmbeddedMVC
 
                     if (Char.IsLetter(line[1]))
                     {
-                        // TODO Read expression
+                        ViewCompiler htmlCompiler = new ViewCompiler(line);
+                        string cs = htmlCompiler.GenerateRender();
+                        csCode.Append(cs);
+                        continue;
                     }
                     else if (line[1] == ':')
                     {
-                        // TODO Read html code
-
                         ViewCompiler htmlCompiler = new ViewCompiler(line.Substring(2));
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);

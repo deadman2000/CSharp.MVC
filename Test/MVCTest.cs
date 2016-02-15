@@ -27,7 +27,11 @@ namespace Test
             Assert.AreEqual("<p><h1>Hello</h1></p>", Utils.Render(Views.html_0)); // Html text with tags in multiple lines
             Assert.AreEqual("<p><h1>Hello</h1></p>", Utils.Render(Views.html_1)); // Html text with tags in one line
             Assert.AreEqual("Result:123abc", Utils.Render("@{@:Result:@String.Concat(\"123\" , \"abc\")}"));
-            //Assert.AreEqual(String.Empty, Utils.Render("@{ @String.Empty }"));
+            Assert.AreEqual(String.Empty, Utils.Render("@{ @String.Empty }"));
+
+            // IF
+            Assert.AreEqual("<h1>TRUE</h1>", Utils.Render("@if (true){\n<h1>TRUE</h1>\n} else {\n<a>asd</a>\n}"));
+            Assert.AreEqual("<a>asd</a>", Utils.Render("@if (1 == 3){\n<h1>TRUE</h1>\n} else {\n<a>asd</a>\n}"));
         }
     }
 }

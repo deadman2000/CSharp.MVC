@@ -69,6 +69,7 @@
     <None Include="Resources\application-vndms-excel.png" />
     <None Include="Resources\BELAZ.jpg" />
     <None Include="Resources\index.cshtml" />
+    <None Include="view\switch.cshtml" />
     <None Include="view\footer.cshtml" />
     <None Include="view\cycles.cshtml" />
     <None Include="view\layout.cshtml" />

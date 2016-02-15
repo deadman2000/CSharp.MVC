@@ -63,8 +63,22 @@
     <Compile Include="ResourceFolder.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="ViewCompiler.cs" />
+    <Compile Include="Views.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Views.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Views.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Views.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\page404.cshtml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

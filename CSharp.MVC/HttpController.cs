@@ -103,8 +103,9 @@ namespace EmbeddedMVC
         protected void WriteContent(int code, string contentType, string contentString)
         {
             if (_completed) throw new Exception("Answer is already send");
-
             _completed = true;
+
+            if (contentString == null) contentString = "";
 
             var response = _context.Response;
             var request = _context.Request;
@@ -124,7 +125,6 @@ namespace EmbeddedMVC
             response.ContentType = contentType + ";" + request.ContentEncoding.WebName;
             //response.ContentType = contentType + ";" + Encoding.UTF8.WebName;
 
-            if (contentString == null) contentString = "";
             byte[] buffer = request.ContentEncoding.GetBytes(contentString);
             //byte[] buffer = Encoding.UTF8.GetBytes(contentString);
 

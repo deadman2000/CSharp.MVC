@@ -17,23 +17,41 @@ namespace EmbeddedMVC
 {
     public class HttpServer
     {
-        private HttpListener _listener;
+        public HttpServer()
+        {
+            InitResources();
+        }
 
-        private string _contentDir = "../../public/";
-        private string _viewDir = "../../view/";
+        #region Configs
 
         string[] _rootDocs = new[] { "index.html" };
 
-        public HttpServer()
+        private string _contentDir = "../../public/";
+        public string ContentDir
         {
-            _listener = new HttpListener();
-            _listener.IgnoreWriteExceptions = true;
+            get { return _contentDir; }
+            set { _contentDir = value; }
         }
 
+        private string _viewDir = "../../view/";
         public string ViewDir
         {
             get { return _viewDir; }
+            set { _viewDir = value; }
         }
+
+        private string _notFoundPage = "?mvc/page404";
+        public string NotFoundPage
+        {
+            get { return _notFoundPage; }
+            set { _notFoundPage = value; }
+        }
+
+        #endregion
+
+        #region Listening
+
+        private HttpListener _listener;
 
         public void Start(int port)
         {
@@ -41,6 +59,8 @@ namespace EmbeddedMVC
 
             InitControllers();
 
+            _listener = new HttpListener();
+            _listener.IgnoreWriteExceptions = true;
             _listener.Prefixes.Add(String.Format("http://*:{0}/", port));
             _listener.Start();
 
@@ -90,6 +110,22 @@ namespace EmbeddedMVC
 
                 response.StatusCode = 404;
                 response.StatusDescription = "NOT FOUND";
+                response.ContentType = "text/html;utf-8";
+
+                string html;
+                if (_notFoundPage != null)
+                {
+                    var view = GetView(_notFoundPage);
+                    view.Init(this);
+                     html = view.Process();
+                }
+                else
+                {
+                    html = "<h1>NOT FOUND</h1>";
+                }
+
+                var bytes = Encoding.UTF8.GetBytes(html);
+                response.OutputStream.Write(bytes, 0, bytes.Length);
             }
             catch (Exception ex)
             {
@@ -107,6 +143,8 @@ namespace EmbeddedMVC
                 }
             }
         }
+
+        #endregion
 
         #region Controllers
 
@@ -225,7 +263,13 @@ namespace EmbeddedMVC
 
         #region Resources
 
-        private List<ResourceFolder> _resourceFolders = new List<ResourceFolder>();
+        private void InitResources()
+        {
+            _resourceFolders = new List<ResourceFolder>();
+            AddResource(Views.ResourceManager, "mvc");
+        }
+
+        private List<ResourceFolder> _resourceFolders;
 
         /// <summary>
         /// Register resource as virtual folder
@@ -256,7 +300,7 @@ namespace EmbeddedMVC
                 fileName = path;
             }
 
-            var resFolder = _resourceFolders.Find(f => f.FolderName.Equals(folderName));
+            var resFolder = _resourceFolders.FindLast(f => f.FolderName.Equals(folderName));
             if (resFolder == null)
                 return null;
             return resFolder.Manager.GetObject(fileName);

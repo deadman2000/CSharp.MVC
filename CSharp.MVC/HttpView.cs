@@ -19,6 +19,11 @@ namespace EmbeddedMVC
             _server = controller.Server;
         }
 
+        internal void Init(HttpServer httpServer)
+        {
+            _server = httpServer;
+        }
+
         #region Scope
 
         private HttpServer _server;

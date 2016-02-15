@@ -21,5 +21,11 @@ namespace TestWeb.Controllers
             Model.Threads = Process.GetCurrentProcess().Threads;
             View("cycles.cshtml");
         }
+
+        public void Switch()
+        {
+            Model.Value = 3;
+            View("switch.cshtml");
+        }
     }
 }
