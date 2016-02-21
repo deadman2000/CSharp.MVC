@@ -39,9 +39,40 @@ namespace EmbeddedMVC
             get { return _context.Response; }
         }
 
+        protected HTTPRequestArgs args;
+        public HTTPRequestArgs Request { get { return args; } }
+
+        private object _body;
+        /// <summary>
+        /// Распарсенное тело запроса
+        /// </summary>
+        public object Body
+        {
+            get { return _body; }
+        }
+
+        private string _rawBody;
+        /// <summary>
+        /// Текст тела запроса
+        /// </summary>
+        public string RawBody
+        {
+            get { return _rawBody; }
+            set { _rawBody = value; }
+        }
+
+
+
         public bool IsPost
         {
             get { return _context.Request.HttpMethod.Equals("POST"); }
+        }
+
+        private Encoding _responseEncoding = Encoding.UTF8;
+        public Encoding ResponseEncoding
+        {
+            get { return _responseEncoding; }
+            set { _responseEncoding = value; }
         }
 
         private JsonWriter _json;
@@ -55,9 +86,6 @@ namespace EmbeddedMVC
             }
         }
 
-        protected HTTPRequestArgs args;
-        public HTTPRequestArgs Request { get { return args; } }
-
         private void InitArguments()
         {
             var request = _context.Request;
@@ -65,13 +93,21 @@ namespace EmbeddedMVC
                 args = new HTTPRequestArgs(request.QueryString);
             else if (request.HttpMethod.Equals("POST"))
             {
-                string text;
                 using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                 {
-                    text = reader.ReadToEnd();
+                    _rawBody = reader.ReadToEnd();
                 }
-                text = text.Replace('+', ' ');
-                args = new HTTPRequestArgs(text);
+
+                var contentType = request.ContentType.Split(';')[0];
+                if (contentType == "application/json")
+                {
+                    _body = JsonParser.Parse(_rawBody);
+                }
+                else
+                {
+                    _rawBody = _rawBody.Replace('+', ' ');
+                    args = new HTTPRequestArgs(_rawBody);
+                }
             }
         }
 
@@ -85,10 +121,20 @@ namespace EmbeddedMVC
         {
             var cookie = _context.Request.Cookies["__sess"];
             if (cookie != null)
-                _session = _server.GetSession(_context.Request.RemoteEndPoint.Address, cookie.Value);
+            {
+                string val = cookie.Value;
+                if (val.Length > 2 && val.StartsWith("\"") && val.EndsWith("\""))
+                    val = val.Substring(1, val.Length - 2); // Remove quotes
+                _session = _server.GetSession(val);
+            }
         }
 
-        public void Finish()
+        public virtual void WriteException(Exception ex)
+        {
+            WriteContent(500, "text/html", ex.ToString());
+        }
+
+        internal void Finish()
         {
             if (_completed) return;
 
@@ -99,6 +145,7 @@ namespace EmbeddedMVC
         }
 
         private bool _completed = false;
+
 
         protected void WriteContent(int code, string contentType, string contentString)
         {
@@ -122,37 +169,49 @@ namespace EmbeddedMVC
             }
             response.StatusCode = code;
 
-            response.ContentType = contentType + ";" + request.ContentEncoding.WebName;
-            //response.ContentType = contentType + ";" + Encoding.UTF8.WebName;
+            response.ContentType = contentType + ";" + _responseEncoding.WebName;
 
-            byte[] buffer = request.ContentEncoding.GetBytes(contentString);
-            //byte[] buffer = Encoding.UTF8.GetBytes(contentString);
+            byte[] buffer = _responseEncoding.GetBytes(contentString);
 
             bool gzip = false;
-            var accept_encoding = request.Headers["Accept-Encoding"];
-            if (accept_encoding != null)
+            if (!Server.NoGZip)
             {
-                var encodings = accept_encoding.Split(',').Select(e => e.Trim());
-                gzip = encodings.Contains("gzip");
+                var accept_encoding = request.Headers["Accept-Encoding"];
+                if (accept_encoding != null)
+                {
+                    var encodings = accept_encoding.Split(',').Select(e => e.Trim());
+                    gzip = encodings.Contains("gzip");
+                }
             }
 
             if (gzip)
             {
                 response.AddHeader("Content-Encoding", "gzip");
-                using (GZipStream refGZipStream = new GZipStream(response.OutputStream, CompressionMode.Compress, false))
+                buffer = GZIP(buffer);
+
+                /*using (GZipStream refGZipStream = new GZipStream(response.OutputStream, CompressionMode.Compress, false))
                 using (MemoryStream varByteStream = new MemoryStream(buffer))
                 {
                     varByteStream.WriteTo(refGZipStream);
                     refGZipStream.Flush();
-                }
+                }*/
             }
-            else
+
+            response.ContentLength64 = buffer.Length;
+            try
             {
-                try
-                {
-                    response.OutputStream.Write(buffer, 0, buffer.Length);
-                }
-                catch { }
+                response.OutputStream.Write(buffer, 0, buffer.Length);
+            }
+            catch { }
+        }
+
+        public static byte[] GZIP(byte[] raw)
+        {
+            using (MemoryStream memory = new MemoryStream())
+            {
+                using (GZipStream gzip = new GZipStream(memory, CompressionMode.Compress, true))
+                    gzip.Write(raw, 0, raw.Length);
+                return memory.ToArray();
             }
         }
 
@@ -186,14 +245,19 @@ namespace EmbeddedMVC
 
             HttpSession sess = new HttpSession(_context.Request.RemoteEndPoint.Address);
             _server.AddSession(sess);
+            BindSession(sess);
 
-            Cookie cookie = new Cookie("__sess", sess.ID, "/");
-            cookie.Expires = DateTime.Now.AddDays(7);
-            _context.Response.SetCookie(cookie);
             return sess;
         }
 
-        public void CloseSession()
+        public void BindSession(HttpSession sess)
+        {
+            Cookie cookie = new Cookie("__sess", sess.ID, "/");
+            cookie.Expires = DateTime.Now.AddDays(7);
+            _context.Response.SetCookie(cookie);
+        }
+
+        public void CloseSession() // TODO Filter from external call
         {
             Cookie cookie = new Cookie("__sess", "", "/");
             cookie.Expired = true;

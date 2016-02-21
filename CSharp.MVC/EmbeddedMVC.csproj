@@ -57,6 +57,7 @@
     <Compile Include="HttpServer.cs" />
     <Compile Include="HttpSession.cs" />
     <Compile Include="HttpView.cs" />
+    <Compile Include="JsonParser.cs" />
     <Compile Include="JsonWriter.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

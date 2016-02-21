@@ -47,6 +47,13 @@ namespace EmbeddedMVC
             set { _notFoundPage = value; }
         }
 
+        private bool _noGZip = false;
+        public bool NoGZip
+        {
+            get { return _noGZip; }
+            set { _noGZip = value; }
+        }
+
         #endregion
 
         #region Listening
@@ -358,10 +365,10 @@ namespace EmbeddedMVC
             _sessions[sess.ID] = sess;
         }
 
-        public HttpSession GetSession(IPAddress ip, string id)
+        public HttpSession GetSession(string id)
         {
             HttpSession sess;
-            if (_sessions.TryGetValue(id, out sess) && sess.IP.Equals(ip))
+            if (_sessions.TryGetValue(id, out sess))
                 return sess;
             return null;
         }
@@ -369,6 +376,11 @@ namespace EmbeddedMVC
         public void RemoveSession(HttpSession session)
         {
             _sessions.Remove(session.ID);
+        }
+
+        public HttpSession[] GetSessions()
+        {
+            return _sessions.Values.ToArray();
         }
 
         #endregion

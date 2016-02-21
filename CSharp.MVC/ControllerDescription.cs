@@ -40,7 +40,18 @@ namespace EmbeddedMVC
 
             HttpController ctrl = (HttpController)Activator.CreateInstance(_type);
             ctrl.Init(_server, context);
-            mi.Invoke(ctrl, new object[0]);
+            try
+            {
+                mi.Invoke(ctrl, new object[0]);
+            }
+            catch (TargetInvocationException tex)
+            {
+                ctrl.WriteException(tex.InnerException);
+            }
+            catch (Exception ex)
+            {
+                ctrl.WriteException(ex);
+            }
             ctrl.Finish();
 
             return true;

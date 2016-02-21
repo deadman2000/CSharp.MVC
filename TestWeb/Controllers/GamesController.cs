@@ -24,6 +24,7 @@ namespace TestWeb.Controllers
 
         public void Test()
         {
+            var a = Request["a"];
             View("test.cshtml");
         }
 
