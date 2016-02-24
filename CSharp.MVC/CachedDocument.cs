@@ -19,6 +19,12 @@ namespace EmbeddedMVC
             _bytes = ImageToBytePng(img);
         }
 
+        public CachedDocument(string text)
+        {
+            _mimeType = "text/plain";
+            _bytes = Encoding.UTF8.GetBytes(text);
+        }
+
         private byte[] _bytes;
         public byte[] Bytes
         {

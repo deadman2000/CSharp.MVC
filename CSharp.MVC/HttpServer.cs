@@ -258,6 +258,8 @@ namespace EmbeddedMVC
 
                     if (obj is Image)
                         doc = new CachedDocument((Image)obj);
+                    else if (obj is string)
+                        doc = new CachedDocument((string)obj);
                     else
                         return null;
                 }

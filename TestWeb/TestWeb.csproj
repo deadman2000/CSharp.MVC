@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="public\favicon.ico" />
+    <None Include="Resources\main_css.txt" />
     <None Include="Resources\application-vndms-excel.png" />
     <None Include="Resources\BELAZ.jpg" />
     <None Include="Resources\index.cshtml" />
