@@ -67,6 +67,7 @@ namespace EmbeddedMVC
         {
             get { return _context.Request.HttpMethod.Equals("POST"); }
         }
+        
 
         private Encoding _responseEncoding = Encoding.UTF8;
         public Encoding ResponseEncoding
@@ -85,6 +86,14 @@ namespace EmbeddedMVC
                 return _json;
             }
         }
+
+        private string _responseText;
+        public string ResponseText
+        {
+            get { return _responseText; }
+            set { _responseText = value; }
+        }
+
 
         private void InitArguments()
         {
@@ -140,6 +149,8 @@ namespace EmbeddedMVC
 
             if (_json != null)
                 WriteContent(200, "application/json", _json.GetText());
+            else if (_responseText != null)
+                WriteContent(200, "text/html", _responseText);
             else
                 WriteContent(504, "text/html", String.Empty);
         }

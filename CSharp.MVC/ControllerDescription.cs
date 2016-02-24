@@ -21,6 +21,7 @@ namespace EmbeddedMVC
             _server = server;
             _type = type;
             _methods = (from m in type.GetMethods(BindingFlags.Public | BindingFlags.Instance).AsParallel()
+                        where m.ReturnType == typeof(void) && m.GetParameters().Length == 0
                         select m).ToDictionary(t => t.Name.ToLower(), t => t);
         }
 

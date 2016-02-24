@@ -124,7 +124,7 @@ namespace EmbeddedMVC
                 {
                     var view = GetView(_notFoundPage);
                     view.Init(this);
-                     html = view.Process();
+                    html = view.Process();
                 }
                 else
                 {
@@ -159,11 +159,12 @@ namespace EmbeddedMVC
 
         private void InitControllers()
         {
-            _controllers = (from a in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
-                            where !a.GlobalAssemblyCache
-                            from t in a.GetTypes()
-                            where t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(HttpController))
-                            select t).ToDictionary(t => t.Name.ToLower(), t => new ControllerDescription(this, t));
+            var classes = (from a in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
+                           where !a.GlobalAssemblyCache
+                           from t in a.GetTypes()
+                           where t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(HttpController))
+                           select t);
+            _controllers = classes.ToDictionary(t => t.Name.ToLower(), t => new ControllerDescription(this, t));
         }
 
         private bool ProcessController(HttpListenerContext context)
@@ -362,6 +363,8 @@ namespace EmbeddedMVC
 
         public void AddSession(HttpSession sess)
         {
+            if (sess == null)
+                throw new ArgumentNullException("Session is null");
             _sessions[sess.ID] = sess;
         }
 
