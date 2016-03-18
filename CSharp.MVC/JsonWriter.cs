@@ -261,6 +261,11 @@ namespace EmbeddedMVC
             sb.Append(val.ToString(defCI));
         }
 
+        private void WriteValue(DateTime val)
+        {
+            sb.Append(val.ToString(defCI));
+        }
+
         #endregion
 
         #region Array Values
