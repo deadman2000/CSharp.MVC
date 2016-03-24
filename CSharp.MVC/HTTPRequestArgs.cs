@@ -106,6 +106,21 @@ namespace EmbeddedMVC
                 return int.Parse(str);
             return val;
         }
+        public uint GetUInt(string key)
+        {
+            string str;
+            if (requestArgs.TryGetValue(key, out str))
+                return uint.Parse(str);
+            throw new ArgumentException("Не задан параметр '" + key + "'");
+        }
+
+        public uint GetUInt(string key, uint val)
+        {
+            string str;
+            if (requestArgs.TryGetValue(key, out str))
+                return uint.Parse(str);
+            return val;
+        }
 
         // Double
 
