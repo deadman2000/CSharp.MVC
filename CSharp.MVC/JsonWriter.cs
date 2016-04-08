@@ -47,6 +47,12 @@ namespace EmbeddedMVC
             return sb.ToString();
         }
 
+        public override string ToString()
+        {
+            return GetText();
+        }
+
+
         public void Clear()
         {
             sb = new StringBuilder();
