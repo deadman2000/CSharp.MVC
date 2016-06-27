@@ -143,7 +143,12 @@ namespace EmbeddedMVC
             WriteContent(500, "text/html", ex.ToString());
         }
 
-        internal void Finish()
+        internal void _ProcessCompleted()
+        {
+            Finish();
+        }
+
+        protected void Finish()
         {
             if (_completed) return;
 

@@ -14,7 +14,8 @@ namespace TestWeb
             HttpServer http = new HttpServer();
             http.AddResource(Views.ResourceManager, "");
             http.AddResource(Images.ResourceManager, "img/icons");
-            http.Start(90);
+            http.AddPrefix("http://*:90/");
+            http.Start();
 
             ConsoleManager.Run();
         }

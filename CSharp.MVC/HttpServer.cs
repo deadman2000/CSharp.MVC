@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Resources;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -20,6 +16,9 @@ namespace EmbeddedMVC
         public HttpServer()
         {
             InitResources();
+
+            _listener = new HttpListener();
+            _listener.IgnoreWriteExceptions = true;
         }
 
         #region Configs
@@ -60,19 +59,23 @@ namespace EmbeddedMVC
 
         private HttpListener _listener;
 
-        public void Start(int port)
+        public void Start()
         {
-            Console.WriteLine("Start HTTP on port " + port);
+            Console.WriteLine("Start HTTP on ports " + string.Join(",", _listener.Prefixes));
 
             InitControllers();
 
-            _listener = new HttpListener();
-            _listener.IgnoreWriteExceptions = true;
-            _listener.Prefixes.Add(String.Format("http://*:{0}/", port));
             _listener.Start();
 
             new Task(HandleRequest).Start();
         }
+
+        public void AddPrefix(string prefix)
+        {
+            _listener.Prefixes.Add(prefix);
+        }
+
+        //http://stackoverflow.com/questions/11403333/httplistener-with-https-support
 
         public void Stop()
         {
@@ -155,16 +158,36 @@ namespace EmbeddedMVC
 
         #region Controllers
 
-        private Dictionary<string, ControllerDescription> _controllers;
+        private Dictionary<string, ControllerDescription> _controllers = new Dictionary<string,ControllerDescription>();
 
         private void InitControllers()
         {
-            var classes = (from a in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (a.GlobalAssemblyCache) continue;
+
+                try
+                {
+                    //Console.WriteLine(a.GetName());
+                    var classes = (from t in a.GetTypes()
+                                   where t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(HttpController))
+                                   select t);
+
+                    foreach (var c in classes)
+                        _controllers[c.Name.ToLower()] = new ControllerDescription(this, c);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Failed load {0}: {1}", a.GetName(), ex.Message);
+                }
+            }
+
+            /*var classes = (from a in AppDomain.CurrentDomain.GetAssemblies().AsParallel()
                            where !a.GlobalAssemblyCache
                            from t in a.GetTypes()
                            where t.IsClass && !t.IsAbstract && t.IsSubclassOf(typeof(HttpController))
                            select t);
-            _controllers = classes.ToDictionary(t => t.Name.ToLower(), t => new ControllerDescription(this, t));
+            _controllers = classes.ToDictionary(t => t.Name.ToLower(), t => new ControllerDescription(this, t));*/
         }
 
         private bool ProcessController(HttpListenerContext context)

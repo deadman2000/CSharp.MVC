@@ -53,7 +53,7 @@ namespace EmbeddedMVC
             {
                 ctrl.WriteException(ex);
             }
-            ctrl.Finish();
+            ctrl._ProcessCompleted();
 
             return true;
         }
