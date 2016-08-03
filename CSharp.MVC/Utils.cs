@@ -12,7 +12,8 @@ namespace EmbeddedMVC
     {
         public static void NameThread(string name)
         {
-            Thread.CurrentThread.Name = name;
+            if (Thread.CurrentThread.Name == null)
+                Thread.CurrentThread.Name = name;
         }
 
         public static string Render(string cshtml)

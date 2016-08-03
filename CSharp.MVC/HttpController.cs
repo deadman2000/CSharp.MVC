@@ -110,7 +110,14 @@ namespace EmbeddedMVC
                 var contentType = request.ContentType.Split(';')[0];
                 if (contentType == "application/json")
                 {
-                    _body = JsonParser.Parse(_rawBody);
+                    try
+                    {
+                        _body = JsonParser.Parse(_rawBody);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("JSON Parse error: {0}\n{1}\n{2}", ex, ex.StackTrace, _rawBody);
+                    }
                 }
                 else
                 {
