@@ -99,6 +99,8 @@ namespace EmbeddedMVC
             }
         }
 
+        public event HttpRequestEventHandler NewRequest;
+
         private void ListenerCallback(IAsyncResult result)
         {
             HttpListener listener = (HttpListener)result.AsyncState;
@@ -107,6 +109,13 @@ namespace EmbeddedMVC
 
             HttpListenerContext context = listener.EndGetContext(result);
             HttpListenerResponse response = context.Response;
+
+            try
+            {
+                if (NewRequest != null)
+                    NewRequest(this, context);
+            }
+            catch { }
 
             try
             {
@@ -158,7 +167,7 @@ namespace EmbeddedMVC
 
         #region Controllers
 
-        private Dictionary<string, ControllerDescription> _controllers = new Dictionary<string,ControllerDescription>();
+        private Dictionary<string, ControllerDescription> _controllers = new Dictionary<string, ControllerDescription>();
 
         private void InitControllers()
         {
@@ -273,7 +282,10 @@ namespace EmbeddedMVC
                     // TODO Don't cache large content
                     doc = new CachedDocument();
                     doc.Bytes = File.ReadAllBytes(filePath);
-                    doc.MimeType = MimeMapping.GetMimeMapping(contentPath); //MimeMapping._mappingDictionary.AddMapping(string fileExtension, string mimeType)
+                    if (contentPath.EndsWith(".svg"))
+                        doc.MimeType = "image/svg+xml";
+                    else
+                        doc.MimeType = MimeMapping.GetMimeMapping(contentPath); //MimeMapping._mappingDictionary.AddMapping(string fileExtension, string mimeType)
                 }
                 else
                 {

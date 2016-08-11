@@ -225,6 +225,62 @@ namespace EmbeddedMVC
         private Dictionary<string, object> _fields = new Dictionary<string, object>();
         public Dictionary<string, object> Fields { get { return _fields; } }
 
+        public override string ToString()
+        {
+            StringBuilder str = new StringBuilder();
+            str.AppendLine("{");
+            foreach (var key in _fields.Keys)
+            {
+                object value = _fields[key];
+                var valStr = ObjectToStr(value);
+                var lines = valStr.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                str.AppendLine(String.Format("\t{0}: {1}", key, lines[0]));
+                for (int i = 1; i < lines.Length; i++)
+                {
+                    str.Append("\t");
+                    str.AppendLine(lines[i]);
+                }
+            }
+            str.AppendLine("}");
+            return str.ToString();
+        }
+
+        private static string ObjectToStr(object value)
+        {
+            if (value is object[])
+            {
+                object[] arr = (object[])value;
+
+                StringBuilder str = new StringBuilder();
+                str.AppendLine("[");
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    var valStr = ObjectToStr(arr[i]);
+                    var lines = valStr.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+
+                    for (int j = 0; j < lines.Length; j++)
+                    {
+                        str.Append("\t");
+                        str.Append(lines[j]);
+                        if (j < lines.Length - 1)
+                            str.AppendLine();
+                    }
+
+                    if (i < arr.Length - 1)
+                        str.Append(',');
+                    str.AppendLine();
+                }
+                str.AppendLine("]");
+                return str.ToString();
+            }
+            
+            if (value is string)
+                return "\"" + value + "\"";
+
+            return value.ToString();
+        }
+
         public bool Contains(string key)
         {
             return _fields.ContainsKey(key);

@@ -54,6 +54,7 @@
     <Compile Include="ControllerDescription.cs" />
     <Compile Include="HttpController.cs" />
     <Compile Include="HTTPRequestArgs.cs" />
+    <Compile Include="HttpRequestEventHandler.cs" />
     <Compile Include="HttpServer.cs" />
     <Compile Include="HttpSession.cs" />
     <Compile Include="HttpView.cs" />

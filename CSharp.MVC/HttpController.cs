@@ -172,10 +172,15 @@ namespace EmbeddedMVC
 
         protected void WriteContent(int code, string contentType, string contentString)
         {
+            if (contentString == null) contentString = "";
+            byte[] buffer = _responseEncoding.GetBytes(contentString);
+            WriteContent(code, contentType, buffer);
+        }
+
+        protected void WriteContent(int code, string contentType = null, byte[] buffer = null)
+        {
             if (_completed) throw new Exception("Answer is already send");
             _completed = true;
-
-            if (contentString == null) contentString = "";
 
             var response = _context.Response;
             var request = _context.Request;
@@ -184,48 +189,50 @@ namespace EmbeddedMVC
             //response.AddHeader("Access-Control-Allow-Origin", "*");
             //response.AddHeader("Access-Control-Origin", "*");
 
+            response.StatusCode = code;
             switch (code)
             {
                 case 200: response.StatusDescription = "OK"; break;
+                case 404: response.StatusDescription = "NOT FOUND"; break;
                 case 500: response.StatusDescription = "INTERNAL SERVER ERROR"; break;
                 case 504: response.StatusDescription = "NOT IMPLEMENTED"; break;
             }
-            response.StatusCode = code;
 
-            response.ContentType = contentType + ";" + _responseEncoding.WebName;
-
-            byte[] buffer = _responseEncoding.GetBytes(contentString);
-
-            bool gzip = false;
-            if (!Server.NoGZip)
+            if (buffer != null)
             {
-                var accept_encoding = request.Headers["Accept-Encoding"];
-                if (accept_encoding != null)
+                response.ContentType = contentType + ";" + _responseEncoding.WebName;
+
+                bool gzip = false;
+                if (!Server.NoGZip)
                 {
-                    var encodings = accept_encoding.Split(',').Select(e => e.Trim());
-                    gzip = encodings.Contains("gzip");
+                    var accept_encoding = request.Headers["Accept-Encoding"];
+                    if (accept_encoding != null)
+                    {
+                        var encodings = accept_encoding.Split(',').Select(e => e.Trim());
+                        gzip = encodings.Contains("gzip");
+                    }
                 }
-            }
 
-            if (gzip)
-            {
-                response.AddHeader("Content-Encoding", "gzip");
-                buffer = GZIP(buffer);
-
-                /*using (GZipStream refGZipStream = new GZipStream(response.OutputStream, CompressionMode.Compress, false))
-                using (MemoryStream varByteStream = new MemoryStream(buffer))
+                if (gzip)
                 {
-                    varByteStream.WriteTo(refGZipStream);
-                    refGZipStream.Flush();
-                }*/
-            }
+                    response.AddHeader("Content-Encoding", "gzip");
+                    buffer = GZIP(buffer);
 
-            response.ContentLength64 = buffer.Length;
-            try
-            {
-                response.OutputStream.Write(buffer, 0, buffer.Length);
+                    /*using (GZipStream refGZipStream = new GZipStream(response.OutputStream, CompressionMode.Compress, false))
+                    using (MemoryStream varByteStream = new MemoryStream(buffer))
+                    {
+                        varByteStream.WriteTo(refGZipStream);
+                        refGZipStream.Flush();
+                    }*/
+                }
+
+                response.ContentLength64 = buffer.Length;
+                try
+                {
+                    response.OutputStream.Write(buffer, 0, buffer.Length);
+                }
+                catch { }
             }
-            catch { }
         }
 
         public static byte[] GZIP(byte[] raw)
