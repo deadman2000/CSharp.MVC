@@ -16,6 +16,12 @@ namespace EmbeddedMVC
         private string cshtml;
         private const bool DEBUG = false;
 
+        public ViewCompiler(ViewCompiler parent, string cshtml)
+        {
+            usings = parent.usings;
+            this.cshtml = cshtml;
+        }
+
         public ViewCompiler(string cshtml)
         {
             this.cshtml = cshtml;
@@ -310,8 +316,8 @@ namespace EmbeddedMVC
         private void WriteCode(string code)
         {
             bool htmlMode = false;
-            StringBuilder html = null;
-            string regexp = null; // Closing regular
+            //StringBuilder html = null;
+            //string regexp = null; // Closing regular
 
             string[] lines = code.Split(new string[] { "\r\n", "\n", "\r" }, StringSplitOptions.RemoveEmptyEntries);
             for (int i = 0; i < lines.Length; i++)
@@ -321,28 +327,40 @@ namespace EmbeddedMVC
 
                 if (DEBUG) Console.WriteLine("CODE: " + line);
 
-                if (line[0] == '@')
+                if (line[0] == '@') // Начинается с @ - у нас код
                 {
                     if (line.Length == 1)
                         throw new Exception("Escape symbol error");
 
                     if (Char.IsLetter(line[1]))
                     {
-                        ViewCompiler htmlCompiler = new ViewCompiler(line);
+                        ViewCompiler htmlCompiler = new ViewCompiler(this, line);
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
                         continue;
                     }
                     else if (line[1] == ':')
                     {
-                        ViewCompiler htmlCompiler = new ViewCompiler(line.Substring(2));
+                        ViewCompiler htmlCompiler = new ViewCompiler(this, line.Substring(2));
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
                         continue;
                     }
                 }
 
-                if (!htmlMode)
+
+                if (line.StartsWith("<"))
+                {
+                    ViewCompiler htmlCompiler = new ViewCompiler(this, line);
+                    string cs = htmlCompiler.GenerateRender();
+                    csCode.Append(cs);
+                }
+                else
+                {
+                    csCode.AppendLine(line);
+                }
+
+                /*if (!htmlMode)
                 {
                     var matches = Regex.Matches(line, "^<\\w+");
                     if (matches.Count > 0)
@@ -362,13 +380,13 @@ namespace EmbeddedMVC
                     html.Append(line);
                     if (Regex.IsMatch(line, regexp))
                     {
-                        ViewCompiler htmlCompiler = new ViewCompiler(html.ToString());
+                        ViewCompiler htmlCompiler = new ViewCompiler(this, html.ToString());
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
                         htmlMode = false;
                         html = null;
                     }
-                }
+                }*/
             }
 
             if (htmlMode)
