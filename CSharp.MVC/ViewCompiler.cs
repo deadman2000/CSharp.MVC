@@ -325,8 +325,6 @@ namespace EmbeddedMVC
                 var line = lines[i].Trim();
                 if (line.Length == 0) continue;
 
-                if (DEBUG) Console.WriteLine("CODE: " + line);
-
                 if (line[0] == '@') // Начинается с @ - у нас код
                 {
                     if (line.Length == 1)
@@ -334,29 +332,40 @@ namespace EmbeddedMVC
 
                     if (Char.IsLetter(line[1]))
                     {
+                        if (DEBUG) Console.WriteLine("Compile line: " + line);
                         ViewCompiler htmlCompiler = new ViewCompiler(this, line);
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
-                        continue;
                     }
                     else if (line[1] == ':')
                     {
+                        if (DEBUG) Console.WriteLine("Compile line: " + line.Substring(2));
                         ViewCompiler htmlCompiler = new ViewCompiler(this, line.Substring(2));
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
-                        continue;
                     }
+                    else if (line[1] == '{')
+                    {
+                        if (DEBUG) Console.WriteLine("CS: " + line.Substring(1));
+                        csCode.Append(line.Substring(1));
+                    }
+                    else
+                        throw new Exception("Unknown escape");
+
+                    continue;
                 }
 
 
                 if (line.StartsWith("<"))
                 {
+                    if (DEBUG) Console.WriteLine("HTML: " + line);
                     ViewCompiler htmlCompiler = new ViewCompiler(this, line);
                     string cs = htmlCompiler.GenerateRender();
                     csCode.Append(cs);
                 }
                 else
                 {
+                    if (DEBUG) Console.WriteLine("CS: " + line);
                     csCode.AppendLine(line);
                 }
 
