@@ -50,14 +50,22 @@ namespace EmbeddedMVC
         /// <returns></returns>
         private string Generate()
         {
+            string body = GenerateRender();
+
             StringBuilder sbClass = new StringBuilder();
-            sbClass.AppendLine("using System;namespace EmbeddedMVC{class CustomHttpView:HttpView{protected override void Render(){");
-            sbClass.Append(GenerateRender());
+            sbClass.AppendLine("using System;");
+            foreach (var str in usings)
+                sbClass.Append(str).AppendLine(";");
+            sbClass.AppendLine("namespace EmbeddedMVC{class CustomHttpView:HttpView{protected override void Render(){");
+            sbClass.Append(body);
             sbClass.Append("}}}");
             return sbClass.ToString();
         }
 
         private StringBuilder csCode;
+
+        private List<string> usings = new List<string>();
+
 
         /// <summary>
         /// Generate render method
@@ -109,6 +117,13 @@ namespace EmbeddedMVC
                         string code = cshtml.Substring(exprStart, offset - exprStart);
                         if (DEBUG) Console.WriteLine(expression + " code: " + code);
                         WriteCode(code);
+                    }
+                    else if (expression.Equals("using"))
+                    {
+                        SkipLine();
+                        string usingLine = cshtml.Substring(exprStart, offset - exprStart);
+                        if (DEBUG) Console.WriteLine("using: " + usingLine);
+                        usings.Add(usingLine.TrimEnd(';'));
                     }
                     else
                         WriteExpression(expression);
@@ -224,6 +239,19 @@ namespace EmbeddedMVC
             }
 
             throw new Exception("End of string not found");
+        }
+
+        private void SkipLine()
+        {
+            for (; offset < cshtml.Length; offset++) // Searching closing bracer
+            {
+                switch (cshtml[offset])
+                {
+                    case '\r':
+                    case '\n':
+                        return;
+                }
+            }
         }
 
         private void SkipBracers()
@@ -360,12 +388,22 @@ namespace EmbeddedMVC
         {
             CSharpCodeProvider codeProvider = new CSharpCodeProvider(new Dictionary<String, String> { { "CompilerVersion", "v4.0" } });
             CompilerParameters parameters = new CompilerParameters();
-            parameters.ReferencedAssemblies.Add("System.dll");
+            /*parameters.ReferencedAssemblies.Add("System.dll");
             parameters.ReferencedAssemblies.Add("System.Core.dll");
             parameters.ReferencedAssemblies.Add("System.Data.dll");
-            parameters.ReferencedAssemblies.Add("Microsoft.CSharp.dll");
-            parameters.ReferencedAssemblies.Add(typeof(ViewCompiler).Assembly.Location);
-            parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+            parameters.ReferencedAssemblies.Add("Microsoft.CSharp.dll");*/
+            //parameters.ReferencedAssemblies.Add(typeof(ViewCompiler).Assembly.Location);
+            //parameters.ReferencedAssemblies.Add(Assembly.GetExecutingAssembly().Location);
+            //parameters.ReferencedAssemblies.Add(Assembly.GetEntryAssembly().Location);
+            var refs = AppDomain.CurrentDomain.GetAssemblies();
+            HashSet<string> imported = new HashSet<string>();
+            foreach (var a in refs)
+            {
+                if (a.IsDynamic) continue;
+                if (imported.Contains(a.FullName)) continue;
+                imported.Add(a.FullName);
+                parameters.ReferencedAssemblies.Add(a.Location);
+            }
 
             parameters.GenerateExecutable = false;
             parameters.GenerateInMemory = true;
