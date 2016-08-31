@@ -14,7 +14,7 @@ namespace EmbeddedMVC
     class ViewCompiler
     {
         private string cshtml;
-        private const bool DEBUG = false;
+        private static bool DEBUG = false;
 
         public ViewCompiler(ViewCompiler parent, string cshtml)
         {
@@ -31,12 +31,15 @@ namespace EmbeddedMVC
         {
             if (DEBUG) Console.WriteLine("Building...");
             string src = Generate();
-            if (DEBUG) Console.WriteLine();
-            if (DEBUG) Console.WriteLine();
-            if (DEBUG) Console.WriteLine(src);
-            if (DEBUG) Console.WriteLine();
-            if (DEBUG) Console.WriteLine();
-            if (DEBUG) File.WriteAllText("D:\\Temp\\temp.cs", src);
+            if (DEBUG)
+            {
+                Console.WriteLine();
+                Console.WriteLine();
+                Console.WriteLine(src);
+                Console.WriteLine();
+                Console.WriteLine();
+            }
+            //if (DEBUG) File.WriteAllText("D:\\Temp\\temp.cs", src);
 
             return Compile(src);
         }

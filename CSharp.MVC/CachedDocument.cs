@@ -45,7 +45,7 @@ namespace EmbeddedMVC
             using (MemoryStream stream = new MemoryStream())
             {
                 img.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                stream.Close();
+                stream.Flush();
                 byteArray = stream.ToArray();
             }
             return byteArray;
