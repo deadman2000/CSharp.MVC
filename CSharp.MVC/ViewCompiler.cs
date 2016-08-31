@@ -65,7 +65,7 @@ namespace EmbeddedMVC
             sbClass.AppendLine("using System;");
             foreach (var str in usings)
                 sbClass.Append(str).AppendLine(";");
-            sbClass.AppendLine("namespace EmbeddedMVC{class CustomHttpView:HttpView{protected override void Render(){");
+            sbClass.AppendLine("namespace CustomView{class CustomHttpView:EmbeddedMVC.HttpView{protected override void Render(){");
             sbClass.Append(body);
             sbClass.Append("}}}");
             return sbClass.ToString();
