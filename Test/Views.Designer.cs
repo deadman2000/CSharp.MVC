@@ -64,7 +64,7 @@ namespace Test {
         ///   Ищет локализованную строку, похожую на @{
         ///&lt;p&gt;
         ///&lt;h1&gt;
-        ///Hello
+        ///&lt;text&gt;Hello&lt;/text&gt;
         ///&lt;/h1&gt;
         ///&lt;/p&gt;
         ///}.

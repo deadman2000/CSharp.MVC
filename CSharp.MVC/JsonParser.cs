@@ -109,7 +109,7 @@ namespace EmbeddedMVC
                     do
                     {
                         c = ReadSym();
-                    } while (IsNumber(c));
+                    } while (IsNumberOrDouble(c));
                     _pos--;
 
                     string substr = _str.Substring(startInd, _pos - startInd);
@@ -211,6 +211,11 @@ namespace EmbeddedMVC
         static bool IsNumber(char c)
         {
             return (c >= '0' && c <= '9') || c == '-' || c == '.';
+        }
+
+        static bool IsNumberOrDouble(char c)
+        {
+            return (c >= '0' && c <= '9') || c == '-' || c == '.' || c == '+' || c == 'E';
         }
 
         public static CultureInfo defCI = new CultureInfo("en-US", false);
