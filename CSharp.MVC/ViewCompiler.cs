@@ -219,7 +219,7 @@ namespace EmbeddedMVC
                     continue;
                 }
 
-                if (!Char.IsLetterOrDigit(c) && c != '.')
+                if (!Char.IsLetterOrDigit(c) && c != '.' && c != '_')
                     break;
             }
 
@@ -332,22 +332,23 @@ namespace EmbeddedMVC
                 {
                     if (line.Length == 1)
                         throw new Exception("Escape symbol error");
-
-                    if (Char.IsLetter(line[1]))
+                    
+                    var first = line[1];
+                    if (Char.IsLetter(first) || first == '_')
                     {
                         if (DEBUG) Console.WriteLine("Compile line: " + line);
                         ViewCompiler htmlCompiler = new ViewCompiler(this, line);
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
                     }
-                    else if (line[1] == ':')
+                    else if (first == ':')
                     {
                         if (DEBUG) Console.WriteLine("Compile line: " + line.Substring(2));
                         ViewCompiler htmlCompiler = new ViewCompiler(this, line.Substring(2));
                         string cs = htmlCompiler.GenerateRender();
                         csCode.Append(cs);
                     }
-                    else if (line[1] == '{')
+                    else if (first == '{')
                     {
                         if (DEBUG) Console.WriteLine("CS: " + line.Substring(1));
                         csCode.Append(line.Substring(1));
