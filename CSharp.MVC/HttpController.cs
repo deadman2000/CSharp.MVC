@@ -51,11 +51,11 @@ namespace EmbeddedMVC
             get { return _body; }
         }
 
-        private string _rawBody;
+        private byte[] _rawBody;
         /// <summary>
         /// Текст тела запроса
         /// </summary>
-        public string RawBody
+        public byte[] RawBody
         {
             get { return _rawBody; }
             set { _rawBody = value; }
@@ -67,7 +67,7 @@ namespace EmbeddedMVC
         {
             get { return _context.Request.HttpMethod.Equals("POST"); }
         }
-        
+
 
         private Encoding _responseEncoding = Encoding.UTF8;
         public Encoding ResponseEncoding
@@ -102,29 +102,70 @@ namespace EmbeddedMVC
                 args = new HTTPRequestArgs(request.QueryString);
             else if (request.HttpMethod.Equals("POST"))
             {
-                using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
+                _rawBody = ReadToEnd(request.InputStream);
+
+                /*using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                 {
-                    _rawBody = reader.ReadToEnd();
-                }
+                    bodyStr = reader.ReadToEnd(); // Старый вариант
+                }*/
 
                 var contentType = request.ContentType.Split(';')[0];
                 if (contentType == "application/json")
                 {
+                    string bodyStr = request.ContentEncoding.GetString(_rawBody);
                     try
                     {
-                        _body = JsonParser.Parse(_rawBody);
+                        _body = JsonParser.Parse(bodyStr);
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine("JSON Parse error: {0}\n{1}\n{2}", ex, ex.StackTrace, _rawBody);
                     }
                 }
-                else
+                else if (contentType == "application/x-www-form-urlencoded")
                 {
-                    _rawBody = _rawBody.Replace('+', ' ');
-                    args = new HTTPRequestArgs(_rawBody);
+                    string bodyStr = request.ContentEncoding.GetString(_rawBody);
+                    bodyStr = bodyStr.Replace('+', ' ');
+                    args = new HTTPRequestArgs(bodyStr);
+                }
+
+                if (args == null)
+                    args = new HTTPRequestArgs(request.QueryString);
+            }
+        }
+
+        private static byte[] ReadToEnd(System.IO.Stream stream)
+        {
+            byte[] readBuffer = new byte[4096];
+
+            int totalBytesRead = 0;
+            int bytesRead;
+
+            while ((bytesRead = stream.Read(readBuffer, totalBytesRead, readBuffer.Length - totalBytesRead)) > 0)
+            {
+                totalBytesRead += bytesRead;
+
+                if (totalBytesRead == readBuffer.Length)
+                {
+                    int nextByte = stream.ReadByte();
+                    if (nextByte != -1)
+                    {
+                        byte[] temp = new byte[readBuffer.Length * 2];
+                        Buffer.BlockCopy(readBuffer, 0, temp, 0, readBuffer.Length);
+                        Buffer.SetByte(temp, totalBytesRead, (byte)nextByte);
+                        readBuffer = temp;
+                        totalBytesRead++;
+                    }
                 }
             }
+
+            byte[] buffer = readBuffer;
+            if (readBuffer.Length != totalBytesRead)
+            {
+                buffer = new byte[totalBytesRead];
+                Buffer.BlockCopy(readBuffer, 0, buffer, 0, totalBytesRead);
+            }
+            return buffer;
         }
 
         private HttpSession _session;
@@ -270,14 +311,14 @@ namespace EmbeddedMVC
             if (_completed)
                 throw new Exception("Answer already send");
 
-            if (_session != null)
-                return _session;
+            if (_session == null)
+            {
+                _session = new HttpSession(_context.Request.RemoteEndPoint.Address);
+                _server.AddSession(_session);
+                BindSession(_session);
+            }
 
-            HttpSession sess = new HttpSession(_context.Request.RemoteEndPoint.Address);
-            _server.AddSession(sess);
-            BindSession(sess);
-
-            return sess;
+            return _session;
         }
 
         public void BindSession(HttpSession sess)

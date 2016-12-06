@@ -98,15 +98,17 @@ namespace EmbeddedMVC
         //http://stackoverflow.com/questions/11403333/httplistener-with-https-support
 
         public void Dispose()
-        { Stop(); }
+        {
+            Stop();
+        }
 
         public void Stop()
         {
             _stop.Set();
+            _listener.Stop();
             _listenerTask.Wait();
             foreach (Task worker in _workers)
                 worker.Wait();
-            _listener.Stop();
         }
 
         private void HandleRequest()
