@@ -35,7 +35,15 @@ namespace Test
             // <text>
             //Assert.AreEqual("<p><h1>Hello</h1></p>", Utils.Render(Views.html_0)); // Html text with tags in multiple lines
 
+        }
+
+        [TestMethod]
+        public void JsonParse()
+        {
             JsonParser.Parse("{\"alt\":7.314598926555504E-11}");
+
+            var s = JsonParser.Parse("{\"alt\":null}");
+            s.ToString();
         }
     }
 }

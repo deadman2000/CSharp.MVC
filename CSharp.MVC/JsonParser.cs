@@ -253,6 +253,9 @@ namespace EmbeddedMVC
 
         private static string ObjectToStr(object value)
         {
+            if (value == null)
+                return "null";
+
             if (value is object[])
             {
                 object[] arr = (object[])value;
