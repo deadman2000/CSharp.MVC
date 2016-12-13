@@ -19,6 +19,11 @@ namespace TestWeb
                 switch (key.Key)
                 {
                     case ConsoleKey.C: Console.Clear(); break;
+                    case ConsoleKey.Q:
+                        Console.WriteLine("Stopping");
+                        Program.HTTP.Stop();
+                        Console.WriteLine("Stopped");
+                        break;
                     default: break;
                 }
             }

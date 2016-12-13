@@ -9,13 +9,15 @@ namespace TestWeb
 {
     class Program
     {
+        public static HttpServer HTTP;
+
         static void Main(string[] args)
         {
-            HttpServer http = new HttpServer();
-            http.AddResource(Views.ResourceManager, "");
-            http.AddResource(Images.ResourceManager, "img/icons");
-            http.AddPrefix("http://*:90/");
-            http.Start();
+            HTTP = new HttpServer();
+            HTTP.AddResource(Views.ResourceManager, "");
+            HTTP.AddResource(Images.ResourceManager, "img/icons");
+            HTTP.AddPrefix("http://*:90/");
+            HTTP.Start();
 
             ConsoleManager.Run();
         }

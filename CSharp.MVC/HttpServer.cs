@@ -146,6 +146,7 @@ namespace EmbeddedMVC
 
         private void Worker()
         {
+            Utils.NameThread("HTTP-Server Worker");
             WaitHandle[] wait = new[] { _ready, _stop };
             while (0 == WaitHandle.WaitAny(wait))
             {
@@ -181,8 +182,6 @@ namespace EmbeddedMVC
 
             try
             {
-                Utils.NameThread("HTTP-Provider Request " + context.Request.Url);
-
                 if (ProcessController(context))
                     return;
 

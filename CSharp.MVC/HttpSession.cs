@@ -30,5 +30,26 @@ namespace EmbeddedMVC
         public IPAddress IP { get { return _ip; } }
 
         public dynamic Data { get { return _data; } }
+
+        private Dictionary<string, object> _values;
+
+        public object this[string key]
+        {
+            get
+            {
+                object v;
+                if (_values.TryGetValue(key, out v)) return v;
+                return null;
+            }
+            set
+            {
+                _values[key] = value;
+            }
+        }
+
+        public bool ContainsKey(string key)
+        {
+            return _values.ContainsKey(key);
+        }
     }
 }
