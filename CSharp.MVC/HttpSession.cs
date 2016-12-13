@@ -31,7 +31,7 @@ namespace EmbeddedMVC
 
         public dynamic Data { get { return _data; } }
 
-        private Dictionary<string, object> _values;
+        private Dictionary<string, object> _values = new Dictionary<string,object>();
 
         public object this[string key]
         {
