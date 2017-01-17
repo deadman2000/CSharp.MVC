@@ -37,7 +37,7 @@ namespace EmbeddedMVC
 
         #region Configs
 
-        string[] _rootDocs = new[] { "index.html" };
+        private string[] _rootDocs = new[] { "index.html", "index.htm" };
 
         private string _contentDir = "../../public/";
         public string ContentDir
@@ -172,7 +172,7 @@ namespace EmbeddedMVC
         private void ProcessRequest(HttpListenerContext context)
         {
             HttpListenerResponse response = context.Response;
-
+            
             try
             {
                 if (NewRequest != null)
@@ -328,7 +328,7 @@ namespace EmbeddedMVC
         {
             if (contentPath[0] != '/') contentPath = "/" + contentPath;
 
-            CachedDocument doc;
+            CachedDocument doc = null;
             if (_fileCache.TryGetValue(contentPath, out doc)) // TODO LastFileWrite checking
                 return doc;
 
@@ -338,7 +338,16 @@ namespace EmbeddedMVC
                     return doc;
 
                 string filePath = _contentDir + contentPath;
-                if (File.Exists(filePath))
+                if (Directory.Exists(filePath))
+                {
+                    foreach (var file in _rootDocs)
+                    {
+                        doc = GetContent(contentPath + "/" + file);
+                        if (doc != null)
+                            break;
+                    }
+                }
+                else if (File.Exists(filePath))
                 {
                     // TODO Don't cache large content
                     doc = new CachedDocument();
@@ -356,11 +365,10 @@ namespace EmbeddedMVC
                         doc = new CachedDocument((Image)obj);
                     else if (obj is string)
                         doc = new CachedDocument((string)obj);
-                    else
-                        return null;
                 }
 
-                _fileCache.Add(contentPath, doc);
+                if (doc != null)
+                    _fileCache.Add(contentPath, doc);
                 return doc;
             }
         }
