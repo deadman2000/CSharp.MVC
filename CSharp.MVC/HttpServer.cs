@@ -104,8 +104,9 @@ namespace EmbeddedMVC
 
         public void Stop()
         {
-            _stop.Set();
             _listener.Stop();
+
+            _stop.Set();
             _listenerTask.Wait();
             foreach (Task worker in _workers)
                 worker.Wait();
@@ -150,6 +151,8 @@ namespace EmbeddedMVC
             WaitHandle[] wait = new[] { _ready, _stop };
             while (0 == WaitHandle.WaitAny(wait))
             {
+                if (!_listener.IsListening) return;
+
                 HttpListenerContext context;
                 lock (_queue)
                 {
@@ -162,8 +165,14 @@ namespace EmbeddedMVC
                     }
                 }
 
-                try { ProcessRequest(context); }
-                catch (Exception e) { Console.Error.WriteLine(e); }
+                try
+                {
+                    ProcessRequest(context);
+                }
+                catch (Exception e)
+                {
+                    Log.HandleException(e);
+                }
             }
         }
 
@@ -172,7 +181,7 @@ namespace EmbeddedMVC
         private void ProcessRequest(HttpListenerContext context)
         {
             HttpListenerResponse response = context.Response;
-            
+
             try
             {
                 if (NewRequest != null)
@@ -186,7 +195,10 @@ namespace EmbeddedMVC
                     return;
 
                 if (ProcessStatic(context))
+                {
+                    response.Close();
                     return;
+                }
 
                 response.StatusCode = 404;
                 response.StatusDescription = "NOT FOUND";
@@ -206,21 +218,11 @@ namespace EmbeddedMVC
 
                 var bytes = Encoding.UTF8.GetBytes(html);
                 response.OutputStream.Write(bytes, 0, bytes.Length);
+                response.Close();
             }
             catch (Exception ex)
             {
                 Log.HandleException(ex);
-            }
-            finally
-            {
-                try
-                {
-                    response.Close();
-                }
-                catch (Exception ex)
-                {
-                    Log.HandleException(ex);
-                }
             }
         }
 
@@ -352,10 +354,7 @@ namespace EmbeddedMVC
                     // TODO Don't cache large content
                     doc = new CachedDocument();
                     doc.Bytes = File.ReadAllBytes(filePath);
-                    if (contentPath.EndsWith(".svg"))
-                        doc.MimeType = "image/svg+xml";
-                    else
-                        doc.MimeType = MimeMapping.GetMimeMapping(contentPath); //MimeMapping._mappingDictionary.AddMapping(string fileExtension, string mimeType)
+                    doc.MimeType = MimeTypes.GetMimeMapping(contentPath);
                 }
                 else
                 {

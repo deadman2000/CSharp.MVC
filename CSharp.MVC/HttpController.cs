@@ -119,7 +119,7 @@ namespace EmbeddedMVC
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine("JSON Parse error: {0}\n{1}\n{2}", ex, ex.StackTrace, _rawBody);
+                        Console.WriteLine("JSON Parse error: {0}\n{1}\nBody: {2}", ex, _context.Request.RawUrl, bodyStr);
                     }
                 }
                 else if (contentType == "application/x-www-form-urlencoded")
@@ -196,6 +196,19 @@ namespace EmbeddedMVC
             Finish();
         }
 
+        private bool _completed = false;
+        private bool _isAsync = false;
+
+        public bool IsAsync
+        {
+            get { return _isAsync; }
+        }
+
+        protected void FinishAsync()
+        {
+            _isAsync = true;
+        }
+
         protected void Finish()
         {
             if (_completed) return;
@@ -207,9 +220,6 @@ namespace EmbeddedMVC
             else
                 WriteContent(504, "text/html", String.Empty);
         }
-
-        private bool _completed = false;
-
 
         protected void WriteContent(int code, string contentType, string contentString)
         {
@@ -274,6 +284,14 @@ namespace EmbeddedMVC
                 }
                 catch { }
             }
+            try
+            {
+                response.Close();
+            }
+            catch (Exception ex)
+            {
+                Log.HandleException(ex);
+            }
         }
 
         public static byte[] GZIP(byte[] raw)
@@ -304,6 +322,15 @@ namespace EmbeddedMVC
         {
             Response.Redirect(url);
             _completed = true;
+
+            try
+            {
+                _context.Response.Close();
+            }
+            catch (Exception ex)
+            {
+                Log.HandleException(ex);
+            }
         }
 
         public HttpSession OpenSession()

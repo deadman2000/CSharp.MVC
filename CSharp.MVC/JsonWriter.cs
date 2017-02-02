@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -406,7 +407,7 @@ namespace EmbeddedMVC
         /// </summary>
         /// <param name="param"></param>
         /// <param name="value"></param>
-        public void WriteParameter(string param, string value)
+        public void WriteParameter(string param, [Localizable(true)] string value)
         {
             StartParameter(param);
             WriteValue(value);

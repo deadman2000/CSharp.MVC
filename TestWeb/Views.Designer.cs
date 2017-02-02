@@ -61,13 +61,15 @@ namespace TestWeb {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;!DOCTYPE html&gt;
+        ///   Ищет локализованную строку, похожую на @using TestWeb;
+        ///
+        ///&lt;!DOCTYPE html&gt;
         ///&lt;html&gt;
         ///&lt;head&gt;
         ///    &lt;meta charset=&quot;utf-8&quot;&gt;
         ///&lt;/head&gt;
         ///&lt;body&gt;
-        ///    &lt;input id=&quot;auth-password&quot; type=&quot;password&quot; placeholder=&quot;@Strings.WEB_Auth_Password&quot; name=&quot;pass&quot;&gt;
+        ///    &lt;input id=&quot;auth-password&quot; type=&quot;password&quot; placeholder=&quot;@Views.WEB_Auth_Password&quot; name=&quot;pass&quot;&gt;
         ///    @if (Session != null)
         ///    {
         ///        &lt;h1&gt;Привет @Session.Data.Login&lt;/h1&gt;

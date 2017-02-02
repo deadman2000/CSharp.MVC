@@ -215,7 +215,7 @@ namespace EmbeddedMVC
 
         static bool IsNumberOrDouble(char c)
         {
-            return (c >= '0' && c <= '9') || c == '-' || c == '.' || c == '+' || c == 'E';
+            return (c >= '0' && c <= '9') || c == '-' || c == '.' || c == '+' || c == 'E' || c == 'e';
         }
 
         public static CultureInfo defCI = new CultureInfo("en-US", false);
@@ -282,7 +282,7 @@ namespace EmbeddedMVC
                 str.AppendLine("]");
                 return str.ToString();
             }
-            
+
             if (value is string)
                 return "\"" + value + "\"";
 

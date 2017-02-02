@@ -41,6 +41,7 @@ namespace Test
         public void JsonParse()
         {
             JsonParser.Parse("{\"alt\":7.314598926555504E-11}");
+            JsonParser.Parse("{\"coords\":[{\"alt\":-6.134654654e-05, \"bat\":13}]}");
 
             var s = JsonParser.Parse("{\"alt\":null}");
             s.ToString();

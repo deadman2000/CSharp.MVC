@@ -27,5 +27,10 @@ namespace TestWeb.Controllers
             Model.Value = 3;
             View("switch.cshtml");
         }
+
+        public void Redirect()
+        {
+            Redirect("http://google.com");
+        }
     }
 }
