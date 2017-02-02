@@ -348,6 +348,17 @@ namespace EmbeddedMVC
             return _session;
         }
 
+        public HttpSession CreateSession()
+        {
+            if (_completed)
+                throw new Exception("Answer already send");
+
+            _session = new HttpSession(_context.Request.RemoteEndPoint.Address);
+            _server.AddSession(_session);
+            BindSession(_session);
+            return _session;
+        }
+
         public void BindSession(HttpSession sess)
         {
             Cookie cookie = new Cookie("__sess", sess.ID, "/");
