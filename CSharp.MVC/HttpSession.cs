@@ -51,5 +51,10 @@ namespace EmbeddedMVC
         {
             return _values.ContainsKey(key);
         }
+
+        public void RemoveKey(string key)
+        {
+            _values.Remove(key);
+        }
     }
 }
