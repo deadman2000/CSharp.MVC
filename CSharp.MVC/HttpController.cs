@@ -102,7 +102,14 @@ namespace EmbeddedMVC
                 args = new HTTPRequestArgs(request.QueryString);
             else if (request.HttpMethod.Equals("POST"))
             {
-                _rawBody = ReadToEnd(request.InputStream);
+                try
+                {
+                    _rawBody = ReadToEnd(request.InputStream);
+                }
+                catch
+                {
+                    return;
+                }
 
                 /*using (var reader = new StreamReader(request.InputStream, request.ContentEncoding))
                 {
@@ -314,8 +321,17 @@ namespace EmbeddedMVC
             HttpView view = _server.GetView(fileName);
             view.Init(this);
             view.Model = _model;
-            string result = view.Process();
-            WriteContent(200, "text/html", result);
+
+            try
+            {
+                string result = view.Process();
+                WriteContent(200, "text/html", result);
+            }
+            catch (Exception ex)
+            {
+                _server.HandleException(ex);
+                WriteContent(500, "text/html", ex.ToString());
+            }
         }
 
         protected void Redirect(string url)
@@ -327,9 +343,8 @@ namespace EmbeddedMVC
             {
                 _context.Response.Close();
             }
-            catch (Exception ex)
+            catch
             {
-                _server.HandleException(ex);
             }
         }
 

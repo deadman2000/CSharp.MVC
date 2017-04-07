@@ -104,14 +104,15 @@ namespace EmbeddedMVC
 
         public void Stop()
         {
+            HandleInfo("Stopping listener");
             _listener.Stop();
-
             _stop.Set();
             if (!_listenerTask.Wait(1000))
             {
                 HandleError("Listener task can't stop!");
             }
 
+            HandleInfo("Stopping workers");
             foreach (Task worker in _workers)
             {
                 if (!worker.Wait(1000))
@@ -126,6 +127,7 @@ namespace EmbeddedMVC
                     }
                 }
             }
+            HandleInfo("Stopped");
         }
 
         private void HandleRequest()
@@ -521,7 +523,8 @@ namespace EmbeddedMVC
 
         #endregion
 
-        public event HttpServerErrorHandler ErrorEvent;
+        public event HttpServerMessageHandler ErrorEvent;
+        public event HttpServerMessageHandler InfoEvent;
 
         internal void HandleException(Exception ex)
         {
@@ -533,7 +536,13 @@ namespace EmbeddedMVC
             if (ErrorEvent != null)
                 ErrorEvent(message);
         }
+
+        internal void HandleInfo(string message)
+        {
+            if (InfoEvent != null)
+                InfoEvent(message);
+        }
     }
 
-    public delegate void HttpServerErrorHandler(string message);
+    public delegate void HttpServerMessageHandler(string message);
 }
