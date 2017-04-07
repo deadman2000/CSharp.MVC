@@ -107,9 +107,25 @@ namespace EmbeddedMVC
             _listener.Stop();
 
             _stop.Set();
-            _listenerTask.Wait();
+            if (!_listenerTask.Wait(1000))
+            {
+                HandleError("Listener task can't stop!");
+            }
+
             foreach (Task worker in _workers)
-                worker.Wait();
+            {
+                if (!worker.Wait(1000))
+                {
+                    HandleError("Task " + worker.Id + " can't stop!");
+                    try
+                    {
+                        worker.Dispose();
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
         }
 
         private void HandleRequest()
@@ -127,7 +143,7 @@ namespace EmbeddedMVC
                 }
                 catch (Exception ex)
                 {
-                    Log.HandleException(ex);
+                    HandleException(ex);
                 }
             }
         }
@@ -171,7 +187,7 @@ namespace EmbeddedMVC
                 }
                 catch (Exception e)
                 {
-                    Log.HandleException(e);
+                    HandleException(e);
                 }
             }
         }
@@ -222,7 +238,7 @@ namespace EmbeddedMVC
             }
             catch (Exception ex)
             {
-                Log.HandleException(ex);
+                HandleException(ex);
             }
         }
 
@@ -470,27 +486,54 @@ namespace EmbeddedMVC
         {
             if (sess == null)
                 throw new ArgumentNullException("Session is null");
-            _sessions[sess.ID] = sess;
+            lock (_sessions)
+            {
+                _sessions[sess.ID] = sess;
+            }
         }
 
         public HttpSession GetSession(string id)
         {
             HttpSession sess;
-            if (_sessions.TryGetValue(id, out sess))
-                return sess;
+            lock (_sessions)
+            {
+                if (_sessions.TryGetValue(id, out sess))
+                    return sess;
+            }
             return null;
         }
 
         public void RemoveSession(HttpSession session)
         {
-            _sessions.Remove(session.ID);
+            lock (_sessions)
+            {
+                _sessions.Remove(session.ID);
+            }
         }
 
         public HttpSession[] GetSessions()
         {
-            return _sessions.Values.ToArray();
+            lock (_sessions)
+            {
+                return _sessions.Values.ToArray();
+            }
         }
 
         #endregion
+
+        public event HttpServerErrorHandler ErrorEvent;
+
+        internal void HandleException(Exception ex)
+        {
+            HandleError(ex.ToString());
+        }
+
+        internal void HandleError(string message)
+        {
+            if (ErrorEvent != null)
+                ErrorEvent(message);
+        }
     }
+
+    public delegate void HttpServerErrorHandler(string message);
 }

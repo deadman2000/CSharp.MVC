@@ -31,7 +31,7 @@ namespace EmbeddedMVC
 
         public dynamic Data { get { return _data; } }
 
-        private Dictionary<string, object> _values = new Dictionary<string,object>();
+        private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
 
         public object this[string key]
         {
@@ -55,6 +55,20 @@ namespace EmbeddedMVC
         public void RemoveKey(string key)
         {
             _values.Remove(key);
+        }
+
+        public string AllKeys()
+        {
+            StringBuilder sb = new StringBuilder();
+            foreach (var kv in _values)
+            {
+                sb.Append(kv.Key).Append(" = ");
+                if (kv.Value != null)
+                    sb.AppendLine(kv.Value.ToString());
+                else
+                    sb.AppendLine("null");
+            }
+            return sb.ToString();
         }
     }
 }

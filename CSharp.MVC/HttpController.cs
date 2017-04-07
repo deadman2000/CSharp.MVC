@@ -284,13 +284,13 @@ namespace EmbeddedMVC
                 }
                 catch { }
             }
+
             try
             {
                 response.Close();
             }
-            catch (Exception ex)
+            catch
             {
-                Log.HandleException(ex);
             }
         }
 
@@ -329,7 +329,7 @@ namespace EmbeddedMVC
             }
             catch (Exception ex)
             {
-                Log.HandleException(ex);
+                _server.HandleException(ex);
             }
         }
 
