@@ -87,6 +87,13 @@ namespace EmbeddedMVC
             }
         }
 
+        private string _responseContentType;
+        public string ResponseContentType
+        {
+            get { return _responseContentType; }
+            set { _responseContentType = value; }
+        }
+
         private string _responseText;
         public string ResponseText
         {
@@ -221,9 +228,9 @@ namespace EmbeddedMVC
             if (_completed) return;
 
             if (_json != null)
-                WriteContent(200, "application/json", _json.GetText());
+                WriteContent(200, _responseContentType ?? "application/json", _json.GetText());
             else if (_responseText != null)
-                WriteContent(200, "text/html", _responseText);
+                WriteContent(200, _responseContentType ?? "text/html", _responseText);
             else
                 WriteContent(504, "text/html", String.Empty);
         }
