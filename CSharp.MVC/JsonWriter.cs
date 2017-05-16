@@ -50,7 +50,7 @@ namespace EmbeddedMVC
 
         public override string ToString()
         {
-            return GetText();
+            return sb.ToString();
         }
 
 
