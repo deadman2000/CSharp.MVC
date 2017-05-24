@@ -338,7 +338,13 @@ namespace EmbeddedMVC
             response.StatusCode = 200;
             response.StatusDescription = "OK";
             response.ContentType = content.MimeType;
-            response.OutputStream.Write(content.Bytes, 0, content.Bytes.Length);
+            try
+            {
+                response.OutputStream.Write(content.Bytes, 0, content.Bytes.Length);
+            }
+            catch
+            {
+            }
             return true;
         }
 
