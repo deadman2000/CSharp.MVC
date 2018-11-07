@@ -14,22 +14,31 @@ namespace EmbeddedMVC
 {
     public class HttpServer
     {
-        const int maxThreads = 100;
-
         private readonly Task[] _workers;
-        private readonly Task _listenerTask;
+    //    private readonly Task _listenerTask;
+        private readonly Thread _listenerThread;
         private readonly ManualResetEvent _stop, _ready;
         private Queue<HttpListenerContext> _queue;
+        private ReaderWriterLockSlim _queueLock;
 
-        public HttpServer()
+        public HttpServer(int maxThreads = 1024)
         {
             InitResources();
 
+            int workerThreadsMin, completionPortThreadsMin;
+            ThreadPool.GetMinThreads(out workerThreadsMin, out completionPortThreadsMin);
+            int workerThreadsMax, completionPortThreadsMax;
+            ThreadPool.GetMaxThreads(out workerThreadsMax, out completionPortThreadsMax);
+
+            ThreadPool.SetMinThreads(workerThreadsMax, completionPortThreadsMin + maxThreads + 15);
+
             _workers = new Task[maxThreads];
+            _queueLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
             _queue = new Queue<HttpListenerContext>();
             _stop = new ManualResetEvent(false);
             _ready = new ManualResetEvent(false);
-            _listenerTask = new Task(HandleRequest);
+        //    _listenerTask = new Task(HandleRequest);
+            _listenerThread = new Thread(HandleRequest);
 
             _listener = new HttpListener();
             _listener.IgnoreWriteExceptions = true;
@@ -79,15 +88,15 @@ namespace EmbeddedMVC
 
             InitControllers();
 
-            _listener.Start();
-
-            _listenerTask.Start();
+         //   _listenerTask.Start();
 
             for (int i = 0; i < _workers.Length; i++)
             {
                 _workers[i] = new Task(Worker);
                 _workers[i].Start();
             }
+            _listener.Start();
+            _listenerThread.Start();
         }
 
         public void AddPrefix(string prefix)
@@ -107,10 +116,10 @@ namespace EmbeddedMVC
             HandleInfo("Stopping listener");
             _listener.Stop();
             _stop.Set();
-            if (!_listenerTask.Wait(1000))
+          /*  if (!_listenerTask.Wait(1000))
             {
                 HandleError("Listener task can't stop!");
-            }
+            }*/
 
             HandleInfo("Stopping workers");
             foreach (Task worker in _workers)
@@ -152,16 +161,20 @@ namespace EmbeddedMVC
 
         private void ContextReady(IAsyncResult ar)
         {
+            _queueLock.EnterWriteLock();
             try
             {
-                lock (_queue)
-                {
-                    _queue.Enqueue(_listener.EndGetContext(ar));
-                    _ready.Set();
-                }
+                _queue.Enqueue(_listener.EndGetContext(ar));
+                _ready.Set();
             }
-            catch { return; }
+            catch { }
+            finally
+            {
+                _queueLock.ExitWriteLock();
+            }
         }
+
+        //    int t = 0;
 
         private void Worker()
         {
@@ -172,7 +185,8 @@ namespace EmbeddedMVC
                 if (!_listener.IsListening) return;
 
                 HttpListenerContext context;
-                lock (_queue)
+                _queueLock.EnterWriteLock();
+                try
                 {
                     if (_queue.Count > 0)
                         context = _queue.Dequeue();
@@ -182,15 +196,16 @@ namespace EmbeddedMVC
                         continue;
                     }
                 }
-
-                try
+                finally
                 {
+                    _queueLock.ExitWriteLock();
+                }
+                /* Task.Run(() =>
+                   {
+                       ProcessRequest(context);
+                   });*/
+                if (context != null)
                     ProcessRequest(context);
-                }
-                catch (Exception e)
-                {
-                    HandleException(e);
-                }
             }
         }
 
@@ -211,7 +226,6 @@ namespace EmbeddedMVC
             {
                 if (ProcessController(context))
                     return;
-
                 if (ProcessStatic(context))
                 {
                     response.Close();
@@ -228,6 +242,7 @@ namespace EmbeddedMVC
                     var view = GetView(_notFoundPage);
                     view.Init(this);
                     html = view.Process();
+
                 }
                 else
                 {
@@ -243,6 +258,23 @@ namespace EmbeddedMVC
                 HandleException(ex);
             }
         }
+
+        /*     static async void MyFunc(HttpListenerResponse response, HttpView view)
+             {
+                 string message = await GetDataAsync(view);
+                 var bytes = Encoding.UTF8.GetBytes(message);
+                 response.OutputStream.Write(bytes, 0, bytes.Length);
+                 response.Close();
+             }
+
+             static Task<string> GetDataAsync(HttpView view)
+             {
+                 return Task.Run(() =>
+                 {
+                     string html = view.Process();
+                     return html;
+                 });
+             }*/
 
         #endregion
 
@@ -294,7 +326,6 @@ namespace EmbeddedMVC
             ControllerDescription controller;
             if (!_controllers.TryGetValue(ctrlName, out controller))
                 return false;
-
             return controller.Process(context);
         }
 
@@ -387,7 +418,12 @@ namespace EmbeddedMVC
                     if (obj is Image)
                         doc = new CachedDocument((Image)obj);
                     else if (obj is string)
-                        doc = new CachedDocument((string)obj);
+                    {
+                        string mimeType = "text/plain";
+                        if (contentPath.EndsWith("_css"))
+                            mimeType = "text/css";
+                        doc = new CachedDocument((string)obj, mimeType);
+                    }
                 }
 
                 if (doc != null)
