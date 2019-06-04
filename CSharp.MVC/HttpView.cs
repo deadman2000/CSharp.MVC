@@ -20,6 +20,7 @@ namespace EmbeddedMVC
             Console.WriteLine("Test88888");
             Console.WriteLine("Add");
             Console.WriteLine("Push");
+            Console.WriteLine("Tag");
         }
 
         internal void Init(HttpServer httpServer)
