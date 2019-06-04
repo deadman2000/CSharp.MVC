@@ -17,7 +17,7 @@ namespace EmbeddedMVC
         {
             _controller = controller;
             _server = controller.Server;
-            Console.WriteLine("Test2");
+            Console.WriteLine("Test3");
         }
 
         internal void Init(HttpServer httpServer)
