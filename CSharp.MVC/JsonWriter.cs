@@ -86,7 +86,7 @@ namespace EmbeddedMVC
         private void CheckStack(JsonStack mask)
         {
             if ((Stack & mask) == 0)
-                throw new Exception("JSON error " + mask);
+                throw new Exception($"JSON error {mask}. Current: {sb}");
         }
 
         private void Comma()

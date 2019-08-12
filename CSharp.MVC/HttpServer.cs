@@ -211,6 +211,8 @@ namespace EmbeddedMVC
 
         public event HttpRequestEventHandler NewRequest;
 
+        public event HttpRequestEventHandler CompletedRequest;
+
         private void ProcessRequest(HttpListenerContext context)
         {
             HttpListenerResponse response = context.Response;
@@ -256,6 +258,11 @@ namespace EmbeddedMVC
             catch (Exception ex)
             {
                 HandleException(ex);
+            }
+            finally
+            {
+                if (CompletedRequest != null)
+                    CompletedRequest(this, context);
             }
         }
 

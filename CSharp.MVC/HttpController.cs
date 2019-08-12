@@ -61,6 +61,8 @@ namespace EmbeddedMVC
             set { _rawBody = value; }
         }
 
+        public bool IsCompleted => _completed;
+
 
 
         public bool IsPost
@@ -218,12 +220,12 @@ namespace EmbeddedMVC
             get { return _isAsync; }
         }
 
-        protected void FinishAsync()
+        protected virtual void FinishAsync()
         {
             _isAsync = true;
         }
 
-        protected void Finish()
+        protected virtual void Finish()
         {
             if (_completed) return;
 
