@@ -113,7 +113,7 @@ namespace EmbeddedMVC
                     _pos--;
 
                     string substr = _str.Substring(startInd, _pos - startInd);
-                    if (substr.Contains('.'))
+                    if (substr.Contains('.') || substr.Contains('e'))
                         return double.Parse(substr, defCI);
                     else
                         return long.Parse(substr, defCI);
