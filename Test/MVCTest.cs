@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using EmbeddedMVC;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Test
 {
@@ -42,9 +43,23 @@ namespace Test
         {
             JsonParser.Parse("{\"alt\":7.314598926555504E-11}");
             JsonParser.Parse("{\"coords\":[{\"alt\":-6.134654654e-05, \"bat\":13}]}");
+            JsonParser.Parse("{\"val\": 2e-06}");
 
             var s = JsonParser.Parse("{\"alt\":null}");
             s.ToString();
         }
+
+        /*[TestMethod]
+        public void JsonMultitest()
+        {
+            string test_path = "../../JSONTestSuite/test_parsing/";
+            var files = Directory.GetFiles(test_path);
+            foreach (var file in files)
+            {
+                Console.WriteLine("Test {0}", file);
+                var content = File.ReadAllText(file);
+                JsonParser.Parse(content);
+            }
+        }*/
     }
 }
