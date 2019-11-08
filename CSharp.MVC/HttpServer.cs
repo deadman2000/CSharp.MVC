@@ -20,6 +20,7 @@ namespace EmbeddedMVC
         private readonly ManualResetEvent _stop, _ready;
         private Queue<HttpListenerContext> _queue;
         private ReaderWriterLockSlim _queueLock;
+        private int _queueSize;
 
         public HttpServer(int maxThreads = 1024)
         {
@@ -43,6 +44,11 @@ namespace EmbeddedMVC
             _listener = new HttpListener();
             _listener.IgnoreWriteExceptions = true;
         }
+
+        /// <summary>
+        /// Requests queue size
+        /// </summary>
+        public int QueueSize => _queueSize;
 
         #region Configs
 
@@ -174,7 +180,6 @@ namespace EmbeddedMVC
             }
         }
 
-        //    int t = 0;
 
         private void Worker()
         {
@@ -195,11 +200,14 @@ namespace EmbeddedMVC
                         _ready.Reset();
                         continue;
                     }
+
+                    _queueSize = _queue.Count;
                 }
                 finally
                 {
                     _queueLock.ExitWriteLock();
                 }
+
                 /* Task.Run(() =>
                    {
                        ProcessRequest(context);
